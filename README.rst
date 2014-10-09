@@ -35,4 +35,9 @@ Try starting a Python REPL and typing::
     >>> examplepkg.b
     2
 
+    # reload() works fine (except on CPython 3.3, which is buggy)
+    >>> import imp
+    >>> imp.reload(examplepkg)
+    <FancyModule 'examplepkg' from 'examplepkg/__init__.pyc'>
+
 The guts are in ``metamodule.py``; see ``examplepkg/`` for example usage.
