@@ -1,0 +1,112 @@
+import sys
+import warnings
+from types import ModuleType
+from importlib import import_module
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
+class FancyModule(ModuleType):
+    def __metamodule_init__(self):
+        # This method is like __init__, except that the weird way metamodule
+        # objects are constructed means that we end up using
+        # ModuleType.__init__, and our subclass __init__ never gets called. So
+        # our setup code calls __metamodule_init__ explicitly. Do *not* call
+        # ModuleType.__init__ from this method!
+        self.__auto_import__ = set()
+        self.__warn_on_access__ = {}
+
+    def __getattr__(self, name):
+        if name in self.__auto_import__:
+            assert "." not in name
+            # FIXME: this next line requires 2.7+.
+            mod = import_module("." + name, package=self.__package__)
+            # import has probably done this implicitly, but let's be explicit:
+            setattr(self, name, mod)
+            return mod
+
+        if name in self.__warn_on_access__:
+            value, warning = self.__warn_on_access__[name]
+            warnings.warn(warning, stacklevel=2)
+            return value
+
+        raise AttributeError(name)
+
+    def __dir__(self):
+        result = set(self.__dict__)
+        result.update(self.__auto_import__)
+        result.update(self.__warn_on_access__)
+        return sorted(result)
+
+    def __repr__(self):
+        base_repr = ModuleType.__repr__(self)
+        return "<%s%s" % (self.__class__.__name__,
+                          base_repr[len("<module"):])
+
+def install(name, class_=FancyModule):
+    orig_module = sys.modules[name]
+    if isinstance(orig_module, class_):
+        return
+    try:
+        orig_module.__class__ = class_
+        new_module = orig_module
+    except TypeError:
+        new_module = _hacky_make_metamodule(orig_module, class_)
+    new_module.__metamodule_init__()
+    sys.modules[name] = new_module
+
+def _hacky_make_metamodule(orig_module, class_):
+    # Construct the new module instance by hand, calling only ModuleType
+    # methods, so as to simulate what happens in the __class__ assignment
+    # path.
+    new_module = ModuleType.__new__(class_)
+    ModuleType.__init__(new_module, orig_module.__name__, orig_module.__doc__)
+
+    # Now we jump through hoops to get at the module object guts...
+
+    import ctypes
+    # These are the only fields in the module object in CPython 1.0
+    # through 2.7.
+    fields = [
+        ("PyObject_HEAD", ctypes.c_byte * object.__basicsize__),
+        ("md_dict", ctypes.c_void_p),
+    ]
+    data_fields = ["md_dict"]
+    # 3.0 adds PEP 3121 stuff:
+    if (3,) <= sys.version_info:
+        fields += [("md_def", ctypes.c_void_p),
+                   ("md_state", ctypes.c_void_p),
+               ]
+        data_fields += ["md_def", "md_state"]
+    # 3.4 adds md_weaklist and md_name
+    if (3, 4) <= sys.version_info:
+        fields += [("md_weaklist", ctypes.c_void_p),
+                   ("md_name", ctypes.c_void_p),
+                   ]
+        # don't try to mess with md_weaklist, that seems unlikely to end
+        # well.
+        data_fields += ["md_name"]
+    if (3, 5) <= sys.version_info:
+        raise RuntimeError("Sorry, I can't read the future!")
+
+    class CModule(ctypes.Structure):
+        _fields_ = fields
+
+    corig_module = ctypes.cast(id(orig_module), ctypes.POINTER(CModule))
+    cnew_module = ctypes.cast(id(new_module), ctypes.POINTER(CModule))
+
+    # And now we swap the two module's internal data fields. This makes
+    # reference counting easier, plus prevents the destruction of orig_module
+    # from cleaning up the objects we are still using.
+    for data_field in data_fields:
+        _swap_attr(corig_module.contents, cnew_module.contents, data_field)
+
+    return new_module
+
+def _swap_attr(obj1, obj2, attr):
+    tmp1 = getattr(obj1, attr)
+    tmp2 = getattr(obj2, attr)
+    setattr(obj1, attr, tmp2)
+    setattr(obj2, attr, tmp1)
