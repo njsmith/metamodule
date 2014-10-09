@@ -2,7 +2,7 @@ from metamodule import install
 install(__name__)
 del install
 
-__auto_import__.add("bar")
+__auto_import__.add("submodule")
 
 # Use a FutureWarning so that it's easier to see from the REPL that the
 # warning is issued.
