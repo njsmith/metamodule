@@ -11,3 +11,6 @@ __warn_on_access__["a"] = (
     FutureWarning("'a' attribute will become 2 in next release"))
 
 b = 2
+
+def f(x):
+    return 2 * x

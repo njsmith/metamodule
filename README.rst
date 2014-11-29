@@ -43,4 +43,9 @@ Try starting a Python REPL and typing::
     >>> imp.reload(examplepkg)
     <FancyModule 'examplepkg' from 'examplepkg/__init__.pyc'>
 
+    # And functions defined in the package use the same globals dict
+    # as the package itself
+    >>> examplepkg.__dict__ is examplepkg.f.func_globals
+    True
+
 The guts are in ``metamodule.py``; see ``examplepkg/`` for example usage.
