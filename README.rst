@@ -13,6 +13,9 @@ structures.  Hopefully, 3.5+ will add support for assignment to a
 module object's __class__ field, in which case this code should Just
 Work. (A similar comment applies to PyPy etc.)
 
+Example
+=======
+
 Try starting a Python REPL and typing::
 
     >>> import examplepkg
