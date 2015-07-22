@@ -1,2 +1,3 @@
-include LICENSE.txt README.rst test_metamodule.py
+include LICENSE.txt README.rst
 recursive-include examplepkg *.py
+recursive-include tests *.py
