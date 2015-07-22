@@ -2,6 +2,8 @@
 # Copyright (C) 2014-2015 Nathaniel J. Smith <njs@pobox.com>
 # Released under a 2-clause BSD license; see the LICENSE file for details.
 
+"A tiny Python module for taking control of your library's public API."
+
 __version__ = "0.0.0-dev"
 
 import sys
@@ -16,6 +18,22 @@ except NameError:
     basestring = str
 
 class FancyModule(ModuleType):
+    """A ModuleType subclass providing lazy imports and
+    warn-on-attribute-access.
+
+    If you add a module name to the __auto_import__ set it will be
+    automatically imported on first access.
+
+    If you do::
+
+        __warn_on_access__[NAME] = (VALUE, WARNING OBJECT)
+
+    then the given NAME will be accessible as an attribute on the module, with
+    the given VALUE, and also raising the given WARNING OBJECT every time it
+    is accessed.
+
+    """
+
     def __metamodule_init__(self):
         # This method is like __init__, except that the weird way metamodule
         # objects are constructed means that we end up using
@@ -54,6 +72,21 @@ class FancyModule(ModuleType):
         return r
 
 def install(name, class_=FancyModule):
+    """Install a metamodule class into the module with name 'name'.
+
+    Generally used via the idiom::
+
+        import metamodule
+        metamodule.install(__name__)
+        del metamodule
+
+    By default it will use metamodule's built-in FancyModule type, but you can
+    also specify your own ModuleType subclass if you want. Your subclass's
+    __init__ method will *not* be called, but if you define a
+    __metamodule_init__ method then it *will* be called.
+
+    """
+
     orig_module = sys.modules[name]
     if isinstance(orig_module, class_):
         return
@@ -62,7 +95,8 @@ def install(name, class_=FancyModule):
         new_module = orig_module
     except TypeError:
         new_module = _hacky_make_metamodule(orig_module, class_)
-    new_module.__metamodule_init__()
+    if hasattr(new_module, "__metamodule_init__"):
+        new_module.__metamodule_init__()
     sys.modules[name] = new_module
 
 def _hacky_make_metamodule(orig_module, class_):

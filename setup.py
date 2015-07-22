@@ -12,13 +12,13 @@ library's public API."""
 
 LONG_DESC = open("README.rst").read()
 
-# For __version__
+# For __version__ and __doc__
 import metamodule
 
 setup(
     name="metamodule",
     version=metamodule.__version__,
-    description=DESC,
+    description=metamodule.__doc__,
     long_description=LONG_DESC,
     author="Nathaniel J. Smith",
     author_email="njs@pobox.com",
