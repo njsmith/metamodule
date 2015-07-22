@@ -114,8 +114,9 @@ Metamodule is currently tested against:
 * CPython 2.6, 2.7
 * CPython 3.2, 3.3, 3.4, and pre-releases of 3.5
 
-I suspect it will *work* on pretty much every version of CPython, I
-just don't have convenient access to older versions to test.
+I suspect it will *work* on pretty much every version of CPython that
+has a working ``ctypes``, I just don't have convenient access to older
+versions to test.
 
 As far as I know we do not yet support PyPy, Jython, etc., but we will
 as soon they catch up with Python 3.5 and start allowing ``__class__``
@@ -141,10 +142,12 @@ same ``__dict__``, then this means that your custom object can't
 subclass ``ModuleType`` (module objects don't allow reassignment of
 their ``__dict__`` attribute), which breaks ``reload()``. All in all
 it's a bit of a mess. It's possible to write correct code using this
-method, if you are extremely careful -- for example ```apipkg``
-<https://pypi.python.org/pypi/apipkg/>`_ uses this method, but to keep
-things workable it requires that your library's public interface be
-defined *entirely* by ``apipkg`` calls.
+method, if you are extremely careful -- for example `apipkg
+<https://pypi.python.org/pypi/apipkg/>`_ is a somewhat similar library
+uses this approach, but to keep things workable it requires that your
+library's public interface be defined *entirely* by apipkg
+calls. There's no easy way to take a legacy Python package and
+incrementally switch it over to using apipkg.
 
 The key feature that metamodule provides is: it makes it easy to set
 up ``sys.modules["mymodule"]`` so that it is both (a) an instance of a
@@ -154,26 +157,31 @@ AND (b) a regular subclass of ``ModuleType`` with your
 you can continue using the usual Python approach to defining your
 API.
 
-This makes it easy and safe to transition an existing library to using
-metamodule.
+This combination makes it easy and safe to transition an existing
+library to using metamodule -- just add a call to
+``metamodule.install`` at the top of your ``__init__.py``, and nothing
+at all will change, except that you can now start taking advantage of
+your new superpowers at your leisure.
 
-How is it done? On CPython 3.5 and later, this is easy: metamodule
+How do we do it? On CPython 3.5 and later, this is easy: metamodule
 uses ``__class__`` assignment on module objects (a feature that was
 added to CPython explicitly to support this usage).
 
 On CPython 3.4 and earlier, it uses ``ctypes`` hacks. These are ugly,
 but safe so long as no one goes back in time and changes the internal
 memory layout of module objects on old, already-released versions of
-Python. (No one will do this.) Basically, we instantiate a new object
-of the specified ``ModuleType`` subclass, and then we swap the guts of
-your original module and the new object, and assign the new object
-into ``sys.modules``. This preserves the key invariant that at any
-given point there's exactly one module that owns your globals dict,
-and it's in ``sys.modules``. This does, however, that things will go
-horribly wrong if you call ``metamodule.install`` *after* someone else
-has already imported your module. So unless you only want to support
-Python 3.5+, then make sure to call ``metamodule.install`` right at
-the top of your module definition file.
+Python. (Which is not going to happen.) Basically, we instantiate a
+new object of the specified ``ModuleType`` subclass, and then we use
+some arcane knowledge of how these objects are laid out in order to
+swap the guts of your original module and the new object. Then we
+assign the new object into ``sys.modules``. This preserves the key
+invariant that at any given point there's exactly one module that owns
+your globals dict, and it's in ``sys.modules``. It does, however, mean
+that things will go horribly wrong if you call ``metamodule.install``
+*after* someone else has already imported your module. So unless you
+only want to support Python 3.5+, then make sure to call
+``metamodule.install`` right at the top of your module definition
+file.
 
 These two tricks together let us safely support all versions of
 CPython, and as alternative implementations like PyPy catch up with
