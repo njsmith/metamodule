@@ -61,8 +61,11 @@ def test_metamodule_module():
     assert log[0].category is FutureWarning
 
 def test_metamodule_custom():
-    import module_custom
+    import module_custom, module_custom2
 
-    assert isinstance(module_custom, module_custom.MyModule)
-    assert module_custom.class_attr == "foo"
-    assert module_custom.other_attr == "bar"
+    assert module_custom._metamodule_init_called is True
+
+    for mod in [module_custom, module_custom2]:
+        assert isinstance(mod, mod.MyModule)
+        assert mod.class_attr == "foo"
+        assert mod.other_attr == "bar"
