@@ -18,23 +18,24 @@ except NameError:
         from imp import reload
 
 import metamodule
-import examplepkg
 
-def test_metamodule():
-    assert isinstance(examplepkg, metamodule.FancyModule)
+def test_metamodule_general():
+    import package
 
-    assert repr(examplepkg).startswith("<FancyModule ")
+    assert isinstance(package, metamodule.FancyModule)
 
-    assert "submodule" in dir(examplepkg)
-    assert "a" in dir(examplepkg)
-    assert "b" in dir(examplepkg)
+    assert repr(package).startswith("<FancyModule ")
 
-    assert isinstance(examplepkg.submodule.subattr, str)
+    assert "submodule" in dir(package)
+    assert "a" in dir(package)
+    assert "b" in dir(package)
 
-    assert examplepkg.b == 2
+    assert isinstance(package.submodule.subattr, str)
+
+    assert package.b == 2
     with warnings.catch_warnings(record=True) as log:
         warnings.simplefilter("always")
-        assert examplepkg.a == 1
+        assert package.a == 1
 
     assert len(log) == 1
     assert log[0].category is FutureWarning
@@ -44,4 +45,24 @@ def test_metamodule():
     # type is not *exactly* ModuleType. All other Python versions should
     # work.
     if sys.version_info[:2] != (3, 3):
-        reload(examplepkg)
+        reload(package)
+
+# Test a module (as opposed to a package)
+def test_metamodule_module():
+    import module
+
+    assert isinstance(module, metamodule.FancyModule)
+
+    with warnings.catch_warnings(record=True) as log:
+        warnings.simplefilter("always")
+        assert module.a == 1
+
+    assert len(log) == 1
+    assert log[0].category is FutureWarning
+
+def test_metamodule_custom():
+    import module_custom
+
+    assert isinstance(module_custom, module_custom.MyModule)
+    assert module_custom.class_attr == "foo"
+    assert module_custom.other_attr == "bar"
