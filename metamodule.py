@@ -1,7 +1,14 @@
+# This is metamodule.py.
+# Copyright (C) 2014-2015 Nathaniel J. Smith <njs@pobox.com>
+# Released under a 2-clause BSD license; see the LICENSE file for details.
+
+__version__ = "0.0.0-dev"
+
 import sys
 import warnings
 from types import ModuleType
-from importlib import import_module
+
+__all__ = ["install", "FancyModule"]
 
 try:
     basestring
@@ -21,11 +28,8 @@ class FancyModule(ModuleType):
     def __getattr__(self, name):
         if name in self.__auto_import__:
             assert "." not in name
-            # FIXME: this next line requires 2.7+.
-            mod = import_module("." + name, package=self.__package__)
-            # import has probably done this implicitly, but let's be explicit:
-            setattr(self, name, mod)
-            return mod
+            __import__(self.__name__ + "." + name)
+            return getattr(self, name)
 
         if name in self.__warn_on_access__:
             value, warning = self.__warn_on_access__[name]
@@ -41,9 +45,13 @@ class FancyModule(ModuleType):
         return sorted(result)
 
     def __repr__(self):
-        base_repr = ModuleType.__repr__(self)
-        return "<%s%s" % (self.__class__.__name__,
-                          base_repr[len("<module"):])
+        r = ModuleType.__repr__(self)
+        # Older versions of ModuleType.__repr__ unconditionally say "<module
+        # ...>" without taking the actual class into account.
+        if r.startswith("<module "):
+            r = "<%s%s" % (self.__class__.__name__,
+                           r[len("<module"):])
+        return r
 
 def install(name, class_=FancyModule):
     orig_module = sys.modules[name]
