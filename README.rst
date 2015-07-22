@@ -78,9 +78,9 @@ top of ``examplepkg/__init__.py``::
     # WARNING: this should be placed at the *very top* of your module,
     # *before* you import any code that might recursively re-import
     # your package.
-    from metamodule import install
-    install(__name__)
-    del install
+    import metamodule
+    metamodule.install(__name__)
+    del metamodule
 
     # Any strings in this set name submodules that will be lazily imported:
     __auto_import__.add("submodule")

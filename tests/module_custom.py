@@ -6,8 +6,8 @@ class MyModule(ModuleType):
 
     class_attr = "foo"
 
-from metamodule import install
-install(__name__, MyModule)
-del install
+import metamodule
+metamodule.install(__name__, MyModule)
+del metamodule
 
 other_attr = "bar"

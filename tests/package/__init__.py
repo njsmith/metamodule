@@ -1,7 +1,7 @@
 # Setup the metamodule.
-from metamodule import install
-install(__name__)
-del install
+import metamodule
+metamodule.install(__name__)
+del metamodule
 
 # Automatically execute "import .submodule" the first time that someone tries
 # to access it:

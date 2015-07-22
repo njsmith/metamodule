@@ -1,6 +1,6 @@
-from metamodule import install
-install(__name__)
-del install
+import metamodule
+metamodule.install(__name__)
+del metamodule
 
 __warn_on_access__["a"] = (
     1,
