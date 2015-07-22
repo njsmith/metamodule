@@ -23,7 +23,7 @@ setup(
     author="Nathaniel J. Smith",
     author_email="njs@pobox.com",
     license="2-clause BSD",
-    modules=["metamodule"],
+    py_modules=["metamodule"],
     url="https://github.com/njsmith/metamodule",
     classifiers =
       [ "Development Status :: 4 - Beta",

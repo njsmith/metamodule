@@ -1,4 +1,7 @@
 language: python
+# give up the ability to use 'sudo' in exchange for getting access to
+# the newer/faster/better-scaling travis infrastructure
+sudo: false
 python:
   - 2.6
   - 2.7
@@ -8,8 +11,14 @@ python:
   - 3.5-dev
 
 install:
+# the 3.5-dev environment on Travis appears to be missing the wheel package
+# and who knows what else, so let's be thorough:
+- pip install wheel nose
 - python setup.py bdist_wheel
 - pip install dist/*
 
 script:
-- nosetests test_metamodule.py
+# Don't run tests from the source directory root, in order to make sure that
+# we're testing the installed metamodule
+- cd tests
+- nosetests .
