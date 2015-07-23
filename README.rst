@@ -83,7 +83,11 @@ top of ``examplepkg/__init__.py``::
     del metamodule
 
     # Any strings in this set name submodules that will be lazily imported:
+    # NB: you probably shouldn't use this unless you have a real,
+    # specific need for it, since it can cause import errors and other
+    # side-effects to appear at weird and confusing places.
     __auto_import__.add("submodule")
+
     # Attributes that we want to warn users about:
     __warn_on_access__["a"] = (
         # Attribute value

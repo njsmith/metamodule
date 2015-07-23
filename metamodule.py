@@ -22,7 +22,10 @@ class FancyModule(ModuleType):
     warn-on-attribute-access.
 
     If you add a module name to the __auto_import__ set it will be
-    automatically imported on first access.
+    automatically imported on first access. (Note, however, that it is
+    generally recommended that you not use this feature unless you have a real
+    need for it, because if something goes wrong with your import then this
+    can cause the error to be reported at a strange and confusing place.)
 
     If you do::
 
