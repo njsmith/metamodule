@@ -98,8 +98,8 @@ def install(name, class_=FancyModule):
         new_module = orig_module
     except TypeError:
         new_module = _hacky_make_metamodule(orig_module, class_)
-    if hasattr(new_module, "__metamodule_init__"):
-        new_module.__metamodule_init__()
+    getattr(type(new_module), "__metamodule_init__", lambda self: None)(
+        new_module)
     sys.modules[name] = new_module
 
 def _hacky_make_metamodule(orig_module, class_):

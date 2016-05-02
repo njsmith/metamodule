@@ -1,9 +1,13 @@
 from types import ModuleType
 
 class MyModule(ModuleType):
-    # No __metamodule_init__, to make sure that that's legal
+    # Make sure that having no __metamodule_init__ is legal, and does not get
+    # routed through __getattr__.
 
-    class_attr = "foo"
+    def __getattr__(self, attr):
+        if attr == "class_attr":
+            return "foo"
+        raise AttributeError
 
 import metamodule
 metamodule.install(__name__, MyModule)
