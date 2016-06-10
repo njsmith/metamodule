@@ -191,3 +191,19 @@ These two tricks together let us safely support all versions of
 CPython, and as alternative implementations like PyPy catch up with
 CPython 3.5 in supporting ``__class__`` assignment, we'll support
 those too.
+
+
+Change history
+==============
+
+1.1:
+
+* When looking up ``__metamodule_init__``, go straight to the class
+  without checking the instance. This makes our behavior more
+  consistent with regular ``__init__``, and avoids accidentally
+  triggering ``__getattr__``. (Thanks to Antony Lee for the report +
+  fix.)
+
+1.0:
+
+* First public release.
