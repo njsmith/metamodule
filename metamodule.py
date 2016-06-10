@@ -4,7 +4,7 @@
 
 "A tiny Python module for taking control of your library's public API."
 
-__version__ = "1.1"
+__version__ = "1.1+dev"
 
 import sys
 import warnings
