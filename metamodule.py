@@ -62,7 +62,10 @@ class FancyModule(ModuleType):
     def __dir__(self):
         result = set(self.__dict__)
         result.update(self.__auto_import__)
-        result.update(self.__warn_on_access__)
+        # We intentionally don't return the "warn on access" items here,
+        # because (a) you shouldn't be using them, and (b) it creates problems
+        # for things like test discovery that want to iterate through all
+        # attribues.
         return sorted(result)
 
     def __repr__(self):

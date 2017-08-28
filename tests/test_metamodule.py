@@ -26,8 +26,11 @@ def test_metamodule_general():
 
     assert repr(package).startswith("<FancyModule ")
 
+    # auto-import attrs show up in dir()
     assert "submodule" in dir(package)
-    assert "a" in dir(package)
+    # warn-on-access attrs *don't* show up in dir()
+    assert "a" not in dir(package)
+    # regular attrs show up in dir()
     assert "b" in dir(package)
 
     assert isinstance(package.submodule.subattr, str)

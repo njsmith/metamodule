@@ -198,6 +198,12 @@ those too.
 Change history
 ==============
 
+1.2:
+
+* In ``FancyModule``, don't include ``__warn_on_access__`` attributes
+  in ``dir(module)``, to avoid problems with test discovery trying to
+  iterate over all attributes.
+
 1.1:
 
 * When looking up ``__metamodule_init__``, go straight to the class
