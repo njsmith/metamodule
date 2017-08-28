@@ -8,12 +8,12 @@ python:
   - 3.2
   - 3.3
   - 3.4
-  - 3.5-dev
+  - 3.5
+  - 3.6
+  - 3.7-dev
 
 install:
-# the 3.5-dev environment on Travis appears to be missing the wheel package
-# and who knows what else, so let's be thorough:
-- pip install wheel nose
+- pip install -U pip setuptools wheel nose
 - python setup.py bdist_wheel
 - pip install dist/*
 
