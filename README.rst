@@ -116,7 +116,7 @@ Versions supported
 Metamodule is currently tested against:
 
 * CPython 2.6, 2.7
-* CPython 3.2, 3.3, 3.4, 3.5, 3.6, 3.7-dev
+* CPython 3.3, 3.4, 3.5, 3.6, 3.7-dev
 
 I suspect it will *work* on pretty much every version of CPython that
 has a working ``ctypes``, I just don't have convenient access to older
